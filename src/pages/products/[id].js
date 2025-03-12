@@ -11,22 +11,46 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [reviewText, setReviewText] = useState('');
+    const [rating, setRating] = useState(0);
+    const [reviewError, setReviewError] = useState(null);
 
     useEffect(() => {
         if (id) {
             axiosInstance.get(`/products/${id}/`)
                 .then((response) => {
-                    console.log('API Response:', response.data);
                     setProduct(response.data);
                     setLoading(false);
                 })
                 .catch((err) => {
-                    console.error('Error fetching product:', err);
                     setError('Failed to load product details.');
                     setLoading(false);
                 });
         }
     }, [id]);
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (!reviewText || rating === 0) {
+            setReviewError('Please provide both a review and a rating.');
+            return;
+        }
+
+        try {
+            await axiosInstance.post(`/products/${id}/add-review/`, {
+                text: reviewText,
+                rating: rating
+            });
+
+            const updatedProduct = await axiosInstance.get(`/products/${id}/`);
+            setProduct(updatedProduct.data);
+            setReviewText('');
+            setRating(0);
+            setReviewError(null);
+        } catch (error) {
+            setReviewError('Failed to submit your review. Please try again.');
+        }
+    };
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
@@ -70,6 +94,40 @@ const ProductDetails = () => {
                     ) : (
                         <p>No reviews yet.</p>
                     )}
+
+                    {/* Review Submission Form */}
+                    <div className="mt-6 border-t pt-4">
+                        <h3 className="text-xl font-bold mb-3">Leave a Review</h3>
+                        <form onSubmit={handleReviewSubmit} className="space-y-4">
+                            <textarea
+                                value={reviewText}
+                                onChange={(e) => setReviewText(e.target.value)}
+                                placeholder="Write your review here..."
+                                className="w-full p-2 border rounded-lg"
+                            ></textarea>
+
+                            <div className="flex items-center gap-4">
+                                <label>Rating:</label>
+                                <input
+                                    type="number"
+                                    value={rating}
+                                    onChange={(e) => setRating(parseInt(e.target.value))}
+                                    min="1"
+                                    max="5"
+                                    className="border p-2 w-16 text-center rounded-lg"
+                                />
+                            </div>
+
+                            {reviewError && <p className="text-red-500">{reviewError}</p>}
+
+                            <button
+                                type="submit"
+                                className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition"
+                            >
+                                Submit Review
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 {/* Related Products Section */}
