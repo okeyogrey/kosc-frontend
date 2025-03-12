@@ -1,11 +1,15 @@
 import Image from 'next/image';
 
 const ProductCard = ({ product }) => {
+    const imageUrl = product.image.startsWith('/')
+        ? `http://localhost:8000${product.image}`
+        : product.image;
+
     return (
         <div className="border rounded-2xl shadow-lg p-4 bg-white hover:shadow-2xl transition-shadow">
             <div className="relative w-full h-48">
                 <Image
-                    src={product.image || '/placeholder-image.jpg'}
+                    src={imageUrl || '/placeholder-image.jpg'}
                     alt={product.name}
                     layout="fill"
                     objectFit="cover"
