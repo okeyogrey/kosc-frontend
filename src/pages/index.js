@@ -7,7 +7,10 @@ export default function Home() {
 
     useEffect(() => {
         api.get('products/')
-            .then(response => setProducts(response.data))
+            .then(response => {
+                console.log('Fetched data:', response.data); // Added console.log here
+                setProducts(response.data);
+            })
             .catch(error => console.error('Error fetching products:', error));
     }, []);
 
@@ -30,7 +33,7 @@ export default function Home() {
                         Featured Products
                     </h1>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {products.map(product => (
+                        {Array.isArray(products) && products.map(product => (
                             <div
                                 key={product.id}
                                 className="p-4 border rounded-lg shadow bg-white dark:bg-gray-800"
